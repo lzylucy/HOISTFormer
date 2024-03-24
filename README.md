@@ -47,7 +47,7 @@ Use the following command to segment and track hand-held objects in videos:
 
 The output folder with segmentation and tracking visualizations will be stored in `./output_results/`.
 
-## Related projects for visual analysis of human hands:
+# Related projects for visual analysis of human hands
 
 [Hand Generation in Diffusion Models](https://supreethn.github.io/research/handiffuser/index.html) (CVPR 2024)
 
