@@ -21,7 +21,7 @@ Follow the installation instructions in [INSTALL.md](INSTALL.md).
 Please see the [project page
 ](https://supreethn.github.io/research/hoistformer/index.html) for the required dataset and annotation format.
 
-Download the [data](https://drive.google.com/file/d/11Y-kHe4ixWjldY1ZyhOyR2Yfchj9S0-D/view?usp=share_link) and place it in `./data/'. 
+Download the [data](https://drive.google.com/file/d/11Y-kHe4ixWjldY1ZyhOyR2Yfchj9S0-D/view?usp=share_link) and place it in `./data/`. 
 
 ## Models
 
