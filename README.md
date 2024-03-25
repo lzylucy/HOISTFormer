@@ -39,7 +39,7 @@ Use the following command for evaluation:
 
 `CUDA_VISIBLE_DEVICES=0 python train_net_video.py --config-file configs/hoist/hoistformer.yaml --eval-only MODEL.WEIGHTS ./pretrained_models/trained_model.pth`
 
-## Demo: Run hand detection and hand-body association on custom images 
+## Demo: Run HOIST-Former on Video Frames 
 
 Use the following command to segment and track hand-held objects in videos:
 
