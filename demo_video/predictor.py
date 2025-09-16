@@ -67,6 +67,7 @@ class VisualizationDemo(object):
         pred_scores = predictions["pred_scores"]
         pred_labels = predictions["pred_labels"]
         pred_masks = predictions["pred_masks"]
+        hand_pred_masks = predictions["pred_hand_masks"]
         keep_instance_ids_np = np.array(pred_scores) > 0.5
         keep_instance_ids_list = keep_instance_ids_np.tolist()
         keep_instance_ids = []
@@ -81,7 +82,9 @@ class VisualizationDemo(object):
         for id, _ in enumerate(keep_instance_ids):
             keep_instance_ids_remap.append(id + 1)
         frame_masks = list(zip(*pred_masks))
+        frame_hand_masks = list(zip(*hand_pred_masks))
         total_vis_output = []
+        instances = []
         for frame_idx in range(len(frames)):
             frame = frames[frame_idx]
             visualizer = TrackVisualizer(frame, self.metadata, instance_mode=self.instance_mode)
@@ -90,10 +93,12 @@ class VisualizationDemo(object):
                 ins.scores = keep_scores
                 ins.pred_classes = keep_labels
                 ins.pred_masks = torch.stack(frame_masks[frame_idx], dim=0)[keep_instance_ids_np]
+                ins.pred_hand_masks = torch.stack(frame_hand_masks[frame_idx], dim=0)[keep_instance_ids_np]
+            instances.append(ins)
             vis_output = visualizer.draw_instance_predictions(predictions=ins, instance_ids=keep_instance_ids_remap)
             total_vis_output.append(vis_output)
 
-        return predictions, total_vis_output
+        return predictions, total_vis_output, instances
 
     def run_on_action_video(self, frames):
             """

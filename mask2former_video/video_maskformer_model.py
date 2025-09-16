@@ -202,10 +202,19 @@ class VideoMaskFormer(nn.Module):
             mask_cls_results = outputs["pred_logits"]
             mask_pred_results = outputs["pred_masks"]
 
+            hand_mask_pred_results = outputs["hand_pred_masks"]
+
             mask_cls_result = mask_cls_results[0]
             # upsample masks
             mask_pred_result = retry_if_cuda_oom(F.interpolate)(
                 mask_pred_results[0],
+                size=(images.tensor.shape[-2], images.tensor.shape[-1]),
+                mode="bilinear",
+                align_corners=False,
+            )
+
+            hand_mask_pred_result = retry_if_cuda_oom(F.interpolate)(
+                hand_mask_pred_results[0],
                 size=(images.tensor.shape[-2], images.tensor.shape[-1]),
                 mode="bilinear",
                 align_corners=False,
@@ -219,7 +228,7 @@ class VideoMaskFormer(nn.Module):
             height = input_per_image.get("height", image_size[0])  # raw image size before data augmentation
             width = input_per_image.get("width", image_size[1])
 
-            return retry_if_cuda_oom(self.inference_video)(mask_cls_result, mask_pred_result, image_size, height, width)
+            return retry_if_cuda_oom(self.inference_video)(mask_cls_result, mask_pred_result, hand_mask_pred_result, image_size, height, width)
 
     def prepare_targets(self, targets, images):
         h_pad, w_pad = images.tensor.shape[-2:]
@@ -258,7 +267,7 @@ class VideoMaskFormer(nn.Module):
 
         return gt_instances
 
-    def inference_video(self, pred_cls, pred_masks, img_size, output_height, output_width):
+    def inference_video(self, pred_cls, pred_masks, hand_masks, img_size, output_height, output_width):
         if len(pred_cls) > 0:
             scores = F.softmax(pred_cls, dim=-1)[:, :-1]
             labels = torch.arange(self.sem_seg_head.num_classes, device=self.device).unsqueeze(0).repeat(self.num_queries, 1).flatten(0, 1)
@@ -273,21 +282,31 @@ class VideoMaskFormer(nn.Module):
                 pred_masks, size=(output_height, output_width), mode="bilinear", align_corners=False
             )
 
+            hand_masks = hand_masks[topk_indices]
+            hand_masks = hand_masks[:, :, : img_size[0], : img_size[1]]
+            hand_masks = F.interpolate(
+                hand_masks, size=(output_height, output_width), mode="bilinear", align_corners=False
+            )                                                    
+
             masks = pred_masks > 0.
+            hand_pred_masks = hand_masks > 0.
 
             out_scores = scores_per_image.tolist()
             out_labels = labels_per_image.tolist()
             out_masks = [m for m in masks.cpu()]
+            out_hand_masks = [hm for hm in hand_pred_masks.cpu()]
         else:
             out_scores = []
             out_labels = []
             out_masks = []
+            out_hand_masks = []
 
         video_output = {
             "image_size": (output_height, output_width),
             "pred_scores": out_scores,
             "pred_labels": out_labels,
             "pred_masks": out_masks,
+            "pred_hand_masks": out_hand_masks,
         }
 
         return video_output

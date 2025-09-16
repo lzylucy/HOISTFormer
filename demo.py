@@ -25,7 +25,7 @@ if __name__ == '__main__':
         for frm in frames:
             frm_np = cv2.imread(osp.join(root, vid, frm))
             frames_bgr_np.append(frm_np)
-        predictions, vis_output = demo_inference.run_on_video(frames_bgr_np)
+        predictions, vis_output, _ = demo_inference.run_on_video(frames_bgr_np)
         os.makedirs(osp.join(output_path, vid), exist_ok=True)
         for frm_idx, vis_img in enumerate(vis_output):
             frm = vis_img.get_image()
